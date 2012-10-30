@@ -1,0 +1,92 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>简单的XHTML页面</title>
+	<script src="http://static.jiaju.com/jiaju/com/js/dojquery-s-min.js" charset="UTF-8"></script>
+	<script src="main.js" charset="UTF-8"></script>
+	<style type="text/css">
+	/*reset*/
+	body,div,span,object,frame,h1,h2,h3,h4,h5,h6,p,blockquote,a,code,em,img,q,small,strong,dd,dl,dt,li,ol,ul,fieldset,form,label,table,tbody,tr,th,td,input{margin:0;padding:0}
+	body{font-size:12px;font-family:"宋体",Verdana,sans-serif,simsun}
+	a img, :link img, :visited img{border:0}
+	table{border-collapse:collapse}
+	ul,ol{list-style:none}
+	a{color:#005EAC; outline:none;}
+	a:link, a:visited{color:#005EAC;text-decoration:none}
+	a:hover{color:#005EAC;text-decoration:underline}
+	h1{font-size:16px}
+	h2{font-size:14px}
+	h3{font-size:14px}
+	h4{font-size:12px}
+	h5{font-size:12px}
+	h6{font-size:12px}
+	select{font-family:Verdana;}
+	embed,object {display:block;}
+	.clearfix:after{content:"";display:block;height:0;clear:both;}
+	.clearfix {*zoom:1;}
+	/*reset end*/
+	html,body{height: 100%;}
+	</style>
+	<link rel="stylesheet" href="http://min.static.jiaju.com/min/?f=static/site/asset/style/common/reset-min.css,static/site/asset/style/common/common-min.css,static/site/asset/style/index/index-min.css" />
+	<link rel="stylesheet" href="normal.css" />
+</head>
+<body>
+<div class="w100w">
+    <div class="ls">
+    <!-- common search -->
+	<h1 class="logo"><a href="/" target="_self"><img src="http://static.jiaju.com/jiaju/com/images/logo/logo.jpg" title="家居就"></a></h1>
+    	<div class="jj_search">
+            <div class="jj_search_result">商品</div>
+            <ul style="display:none;" class="jj_search_sel">
+                <li><a target="_self" rel="good" href="javascript:;">商品</a></li>
+                <li><a target="_self" rel="shop" href="javascript:;">店铺</a></li>
+            </ul>
+            <form id="form_search_box" method="get">
+                <label for="jj_search_ipt" id="search_default" class="jj_search_info" style="display: block;">请输入商品名称</label>
+                <input type="text" x-webkit-speech="" autocomplete="off" class="jj_search_ipt search_key_bg" id="search_key" name="jj_search_ipt">
+                <input type="submit" class="jj_search_btn" value="搜 索">
+            </form>
+        </div>
+    <!-- common search end --> 
+    </div>
+</div>
+<script>
+
+$('.jj_search_result').click(function(){
+	$(this).next('.jj_search_sel').show();
+	$('.jj_search_sel a').click(function(){
+		$(this).closest('.jj_search').find('.jj_search_result').text($(this).text());
+	})
+});
+
+jQuery(document).ready(function(){
+
+	/*搜索框自动补全*/
+		var url = '';
+		var defaluttext = jQuery('.jj_search_result').text();
+		if (defaluttext == '店铺') {
+			url = 'http://www.jiaju.com/goodslist/GetKeys/?t=1';
+		}else{
+			url = 'http://www.jiaju.com/goodslist/GetKeys/?t=2';
+		}
+		jQuery('#search_key').suggest({
+			//默认显示商品
+			'url': url,
+			'key': 'k',
+			'isJsonp':true
+		},function(self){
+			jQuery('.jj_search_sel a').click(function(){
+				var text = jQuery(this).text();
+				if (text == '店铺') {
+					self.setUrl('http://www.jiaju.com/goodslist/GetKeys/?t=1');
+				}else{
+					self.setUrl('http://www.jiaju.com/goodslist/GetKeys/?t=2');
+				}
+			});
+		});		
+});		
+
+</script>
+</body>
+</html>
