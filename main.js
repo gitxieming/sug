@@ -1,7 +1,3 @@
-/*
- *  suggest
- *  @author xieming@leju.sina.com.cn
- */
 (function($){
 
     $.tools = $.tools || {version: '1.0'};
@@ -12,7 +8,7 @@
         defaultWrapperClass:'suggest-items-wrapper',    //默认的提示层class名
         addWrapperClass : "",   // 添加的提示层class名，用于同一页面有多个suggest时样式化提示层，默认只有suggest-items-wrapper
         divShim:'divShim',   //iframe默认id
-        isJsonp:false,   //是否jsonp形式,跨域时请设置为true
+        isJsonp:false,   //是否jsonp形式
         isTriggerFocus:false,  //是否触发focus
         onAfterPressEnter:function(e, self){}  //自定义事件，按回车键选择后触发，可用来做是否提交表单等
       
@@ -30,9 +26,13 @@
         var self = handle;
         var timer = null;
         self.dataCache = {};
-
+        var checkValueTimer = null;
         $.extend(self,{
             onSelect : function(e, currentItem){
+                // console.log('runing onSelect....');
+                if (self._isRunning) {
+                    self.stop();
+                }
                 if (itemsWrapper.css('display') == 'none') {
                     return;
                 }
@@ -103,6 +103,7 @@
                 }
                 var input = $('body').data('whichInput');
                 if (input) {
+                    clearInterval(checkValueTimer);
                     input.val(text);
                 }
             },
@@ -122,6 +123,27 @@
             showWrapper:function(){
                 $('#' + conf.wrapperID).show();
                 divShim && divShim.show();  
+            },
+            /**
+             * 启动计时器，开始监听用户输入
+             */
+            start:function (e, options) {
+                self._timer = setTimeout(function () {
+                    // console.log('is setTimeout...');
+                    getData( self, e, options );
+                    self._timer = setTimeout(arguments.callee, 200);
+                }, 200);
+
+                self._isRunning = true;
+            },
+            /**
+             * 停止计时器
+             */
+            stop:function () {
+                if (self._timer) {
+                    clearTimeout(self._timer);
+                }
+                self._isRunning = false;
             }
         });
         
@@ -151,6 +173,7 @@
         }
         //获取数据
         function getData(inputObj, e, options) {
+            // console.log('runing getData....');
             var val = $.trim(inputObj.val()),
                 url = options.url,
                 key = options.key,
@@ -230,6 +253,7 @@
         }
         //初始化输入框
         function initTextInput (options){
+            
             self.attr('autocomplete', 'off');
             self.bind('focus',function(){
                 if (options.addWrapperClass) {
@@ -239,17 +263,24 @@
                 }
             });
             self.bind('keydown', function (e) {
-                self.evt = e;
-                timer && clearTimeout(timer);
-                timer = setTimeout(function(){
-                    getData( self, self.evt, options );
-                }, 200);
-                self.onSelect( e, itemsWrapper.find('.on') );
+                var keyCode = e.keyCode;
+                if (keyCode == 27) {
+                    self.hideWrapper();
+                    self.stop();
+                    return;
+                }
+                if (keyCode === 40 || keyCode == 38) {
+                    self.onSelect( e, itemsWrapper.find('.on') );
+                }else{
+                    if(!self._isRunning){
+                        self.start(e, options);
+                    }
+                }
             });
-            self.bind('click', function(e){
-                 e.stopPropagation();
-                 // self.showWrapper();
-            })
+            self.bind('blur', function(e){
+                 // e.stopPropagation();
+                 self.stop();
+            });
         }
         function init(options){
             initDOMready(options);
@@ -262,7 +293,6 @@
                 eventStatus = true;
             }
         }
-        /* 初始化 */
         init( conf );
         /* 调用回调,参数为当前jq对象*/
         if ( fn ){
